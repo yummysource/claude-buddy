@@ -48,11 +48,41 @@ cd claude-code-buddy/server/python && uv sync
 cd ../../web && bun install
 ```
 
-## 接入 Claude Code hook
+## 接入 Claude Code
+
+### 1. Hook 事件
 
 把 [`hooks/settings.json`](hooks/settings.json) 中的 `hooks` 區塊合併到 `~/.claude/settings.json`。
 
 每個 hook 把 Claude Code 的事件 POST 到 `http://127.0.0.1:7381/hook`。命令末尾的 `|| echo '{}'` 保證 hub 離線時 Claude Code 仍可正常執行——curl 失敗時會給 hook runner 傳回空 JSON 物件，而不是阻塞工作階段。
+
+### 2. Statusline（上下文占用、成本、Token 數、程式碼行數）
+
+儀表板裡的核心指標——上下文視窗百分比、工作階段成本、累計 Token 數、程式碼新增/刪除行數——來自 Claude Code 的 `statusLine` 機制，**不是** 來自上面的 hooks。在 `~/.claude/settings.json` 裡加一個 `statusLine` 區塊：
+
+```jsonc
+// ~/.claude/settings.json
+{
+  "hooks": { /* ... 來自 hooks/settings.json ... */ },
+  "statusLine": {
+    "type": "command",
+    "command": "/絕對路徑/claude-code-buddy/hooks/statusline.sh",
+    "padding": 0
+  }
+}
+```
+
+[`hooks/statusline.sh`](hooks/statusline.sh) 是一個最小化腳本：從 stdin 讀取 payload，後台轉發給 hub，並在終端機狀態列輸出 `🤖 模型 · 🧠 N% · 💰 $0.00`。終端機顯示部分需要 `jq`（`brew install jq`），轉發功能不依賴 `jq`。
+
+**已有自訂 statusline 腳本？** 在你的 `INPUT=$(cat)` 之後加這三行：
+
+```bash
+INPUT=$(cat)
+
+# claude-code-buddy：把 payload 轉發給 hub
+echo "$INPUT" | curl -sS --max-time 3 -X POST --data-binary @- \
+  http://127.0.0.1:7381/hook >/dev/null 2>&1 &
+```
 
 ## 啟動
 

@@ -48,11 +48,41 @@ cd claude-code-buddy/server/python && uv sync
 cd ../../web && bun install
 ```
 
-## Wire Up the Claude Code Hook
+## Wire Up Claude Code
+
+### 1. Hook events
 
 Merge the `hooks` block from [`hooks/settings.json`](hooks/settings.json) into your `~/.claude/settings.json`.
 
 Every hook posts the Claude Code payload to `http://127.0.0.1:7381/hook`. The trailing `|| echo '{}'` keeps Claude Code working when the hub is offline — a failed curl returns an empty JSON object to the hook runner instead of blocking the session.
+
+### 2. Statusline (context %, cost, token counts, lines changed)
+
+The rich metrics shown in the dashboard — context usage percentage, session cost, cumulative token counts, and code-change lines — come from Claude Code's `statusLine` mechanism, **not** from the hooks above. Configure it by adding a `statusLine` block to `~/.claude/settings.json` alongside the hooks:
+
+```jsonc
+// ~/.claude/settings.json
+{
+  "hooks": { /* ... from hooks/settings.json ... */ },
+  "statusLine": {
+    "type": "command",
+    "command": "/absolute/path/to/claude-code-buddy/hooks/statusline.sh",
+    "padding": 0
+  }
+}
+```
+
+[`hooks/statusline.sh`](hooks/statusline.sh) is a minimal script that reads the payload from stdin, forwards it to the hub in the background, and outputs a compact `🤖 Model · 🧠 N% · 💰 $0.00` status line in the terminal. Requires `jq` (`brew install jq`) for the terminal output; the hub forwarding works without it.
+
+**Already have a custom statusline script?** Add these three lines immediately after your `INPUT=$(cat)` read:
+
+```bash
+INPUT=$(cat)
+
+# claude-code-buddy: forward payload to hub
+echo "$INPUT" | curl -sS --max-time 3 -X POST --data-binary @- \
+  http://127.0.0.1:7381/hook >/dev/null 2>&1 &
+```
 
 ## Run
 

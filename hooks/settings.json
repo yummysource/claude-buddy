@@ -1,5 +1,6 @@
 {
   "_comment": "Merge the `hooks` block into ~/.claude/settings.json. Each command POSTs the hook payload to the hub daemon. `|| echo '{}'` makes the hook a no-op when the hub is not running so Claude Code keeps working normally.",
+  "_statusline_comment": "statusline metrics (context %, cost, tokens, lines changed) are NOT delivered via hooks. Add the following to ~/.claude/settings.json alongside the hooks block, pointing at hooks/statusline.sh (or your own script with the buddy forwarding lines added): \"statusLine\": { \"type\": \"command\", \"command\": \"/path/to/claude-code-buddy/hooks/statusline.sh\", \"padding\": 0 }",
   "hooks": {
     "SessionStart": [
       {
@@ -47,13 +48,6 @@
       }
     ],
     "Notification": [
-      {
-        "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
-        ]
-      }
-    ],
-    "statusline": [
       {
         "hooks": [
           {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
