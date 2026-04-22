@@ -1,0 +1,236 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Font variable → Tailwind utility mapping ────────────────────────────── */
+@theme inline {
+  --font-sans:     var(--font-inter);
+  --font-mono:     var(--font-jetbrains);
+  --font-headline: var(--font-space-grotesk);
+
+  /* Map shadcn CSS vars to Tailwind color utilities */
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-card:               var(--card);
+  --color-card-foreground:    var(--card-foreground);
+  --color-popover:            var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary:          var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-accent:             var(--accent);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-destructive:        var(--destructive);
+  --color-border:             var(--border);
+  --color-input:              var(--input);
+  --color-ring:               var(--ring);
+
+  /* Gilded Terminal custom tokens */
+  --color-gold:               var(--gold);
+  --color-gold-dim:           var(--gold-dim);
+  --color-surface-container:  var(--surface-container);
+  --color-surface-high:       var(--surface-high);
+  --color-surface-highest:    var(--surface-highest);
+  --color-success:            var(--success);
+
+  --radius-sm:  0.125rem; /* 2px  — small technical components */
+  --radius-md:  0.25rem;  /* 4px  — inputs, chips */
+  --radius-lg:  0.25rem;  /* 4px  — primary cards */
+  --radius-xl:  0.5rem;   /* 8px  — glass panels, large containers */
+  --radius-2xl: 0.75rem;  /* 12px — pill badges */
+}
+
+/* ── Light mode (default) ─────────────────────────────────────────────────── */
+:root {
+  --background:           #F9F7F2;
+  --foreground:           #131313;
+  --card:                 #ffffff;
+  --card-foreground:      #131313;
+  --popover:              #ffffff;
+  --popover-foreground:   #131313;
+  --primary:              #8A6D00;
+  --primary-foreground:   #ffffff;
+  --secondary:            #f5f2ea;
+  --secondary-foreground: #131313;
+  --muted:                #f0ede6;
+  --muted-foreground:     rgba(19, 19, 19, 0.55);
+  --accent:               #fff7dd;
+  --accent-foreground:    #8A6D00;
+  --destructive:          #ba1a1a;
+  --border:               rgba(77, 70, 53, 0.15);
+  --input:                rgba(19, 19, 19, 0.06);
+  --ring:                 #D4AF37;
+
+  /* Custom Gilded Terminal tokens */
+  --gold:               #D4AF37;
+  --gold-dim:           #b08d00;
+  --surface-container:  #f5f2ea;
+  --surface-high:       #ede9df;
+  --surface-highest:    #e5e1d6;
+  --success:            #16a34a;  /* green-700 — on light backgrounds */
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+.dark {
+  --background:           #131313;
+  --foreground:           #e5e2e1;
+  --card:                 #1c1b1b;
+  --card-foreground:      #e5e2e1;
+  --popover:              #201f1f;
+  --popover-foreground:   #e5e2e1;
+  --primary:              #f2ca50;
+  --primary-foreground:   #3c2f00;
+  --secondary:            #353534;
+  --secondary-foreground: #e5e2e1;
+  --muted:                #201f1f;
+  --muted-foreground:     #d0c5af;
+  --accent:               #2a2a2a;
+  --accent-foreground:    #f2ca50;
+  --destructive:          #ff9688;
+  --border:               rgba(77, 70, 53, 0.30);
+  --input:                rgba(255, 255, 255, 0.07);
+  --ring:                 #f2ca50;
+
+  /* Custom Gilded Terminal tokens */
+  --gold:               #f2ca50;
+  --gold-dim:           #d4af37;
+  --surface-container:  #201f1f;
+  --surface-high:       #2a2a2a;
+  --surface-highest:    #353534;
+  --success:            #4ade80;  /* green-400 — on dark backgrounds */
+}
+
+/* ── Base styles ─────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* ── Gilded Terminal custom utilities ────────────────────────────────────── */
+@layer utilities {
+  /* Glassmorphism panel — light default, dark override */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.60);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .dark .glass-panel {
+    background: rgba(53, 53, 52, 0.45);
+  }
+
+  /* Gold glow shadow */
+  .gilded-glow {
+    box-shadow: 0 0 16px rgba(212, 175, 55, 0.12);
+  }
+  .dark .gilded-glow {
+    box-shadow: 0 0 16px rgba(242, 202, 80, 0.14);
+  }
+
+  /* Error glow for context bar critical state */
+  .error-glow {
+    box-shadow: 0 0 8px rgba(255, 150, 136, 0.5);
+  }
+
+  /* ── Markdown prose for the Latest Response terminal panel ───────────────
+     Scoped to .prose-buddy so it does not leak into other components.
+     Uses monospace fonts and muted colours to fit the terminal aesthetic.  */
+  .prose-buddy { color: var(--foreground); }
+  .prose-buddy p  { margin: 0 0 0.6em; line-height: 1.6; }
+  .prose-buddy p:last-child { margin-bottom: 0; }
+
+  .prose-buddy strong { color: var(--foreground); font-weight: 700; }
+  .prose-buddy em     { color: var(--muted-foreground); font-style: italic; }
+
+  .prose-buddy h1,.prose-buddy h2,.prose-buddy h3,
+  .prose-buddy h4,.prose-buddy h5,.prose-buddy h6 {
+    font-family: var(--font-headline);
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0.8em 0 0.3em;
+    line-height: 1.3;
+  }
+  .prose-buddy h1 { font-size: 1em; }
+  .prose-buddy h2 { font-size: 0.95em; }
+  .prose-buddy h3 { font-size: 0.9em; }
+
+  .prose-buddy ul,.prose-buddy ol { margin: 0.4em 0 0.6em 1.2em; padding: 0; }
+  .prose-buddy li { margin-bottom: 0.2em; }
+  .prose-buddy ul li { list-style-type: disc; }
+  .prose-buddy ol li { list-style-type: decimal; }
+
+  /* Inline code */
+  .prose-buddy :not(pre) > code {
+    background: var(--muted);
+    color: var(--primary);
+    border-radius: 3px;
+    padding: 0.1em 0.3em;
+    font-size: 0.9em;
+  }
+
+  /* Code blocks */
+  .prose-buddy pre {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75em 1em;
+    overflow-x: auto;
+    margin: 0.5em 0 0.8em;
+  }
+  .prose-buddy pre code {
+    background: transparent;
+    color: var(--foreground);
+    padding: 0;
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+
+  /* Blockquote */
+  .prose-buddy blockquote {
+    border-left: 2px solid var(--primary);
+    padding-left: 0.75em;
+    color: var(--muted-foreground);
+    margin: 0.4em 0;
+    font-style: italic;
+  }
+
+  /* Horizontal rule */
+  .prose-buddy hr { border: none; border-top: 1px solid var(--border); margin: 0.8em 0; }
+
+  /* Tables */
+  .prose-buddy table { border-collapse: collapse; width: 100%; margin: 0.6em 0; font-size: 0.85em; }
+  .prose-buddy th,.prose-buddy td { border: 1px solid var(--border); padding: 0.3em 0.6em; text-align: left; }
+  .prose-buddy th { background: var(--muted); color: var(--primary); font-weight: 600; }
+
+  /* Links */
+  .prose-buddy a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Human-prompt variant — slightly more muted than the AI reply */
+  .prose-buddy-human { color: var(--muted-foreground); }
+  .prose-buddy-human strong { color: var(--foreground); }
+  .prose-buddy-human code { color: var(--primary); }
+}
+
+/* ── Custom scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dim);
+}

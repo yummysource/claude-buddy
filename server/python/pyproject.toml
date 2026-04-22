@@ -1,0 +1,18 @@
+[project]
+name = "claude-code-buddy-server"
+version = "0.1.0"
+description = "Claude Code session monitor — Python hub server"
+requires-python = ">=3.13"
+dependencies = [
+    "websockets>=13",
+]
+
+[project.optional-dependencies]
+# BLE hardware support (optional)
+ble = ["bleak>=0.22"]
+
+[project.scripts]
+claude-code-buddy = "hub.__main__:main"
+
+[tool.uv]
+package = true
