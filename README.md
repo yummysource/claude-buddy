@@ -4,6 +4,41 @@ Real-time dashboard and optional hardware display for monitoring Claude Code ses
 
 [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
 
+## Demo
+
+[![Claude Code Buddy — real-time session monitor demo](https://img.youtube.com/vi/SEFFsbFHAD8/maxresdefault.jpg)](https://youtu.be/SEFFsbFHAD8)
+
+## Screenshots
+
+**Desktop**
+
+<table>
+  <tr>
+    <td><img src="assets/web-light.png" alt="Dashboard — light mode"></td>
+    <td><img src="assets/web-dark.png" alt="Dashboard — dark mode"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Light mode</sub></td>
+    <td align="center"><sub>Dark mode</sub></td>
+  </tr>
+</table>
+<img src="assets/web-approve.png" alt="Operator approval modal" width="600">
+
+**Mobile**
+
+<table>
+  <tr>
+    <td><img src="assets/mobile-light.JPG" alt="Mobile — light mode" width="220"></td>
+    <td><img src="assets/mobile-dark.JPG" alt="Mobile — dark mode" width="220"></td>
+    <td><img src="assets/mobile-approve.PNG" alt="Mobile — approval prompt" width="220"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Light</sub></td>
+    <td align="center"><sub>Dark</sub></td>
+    <td align="center"><sub>Approval</sub></td>
+  </tr>
+</table>
+
 ## Features
 
 - Real-time session monitoring — status, model, context usage, heartbeat updates on every hook.

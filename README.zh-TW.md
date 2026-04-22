@@ -4,6 +4,42 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
+## 示範影片
+
+[![Claude Code Buddy 即時工作階段監控示範](https://img.youtube.com/vi/SEFFsbFHAD8/maxresdefault.jpg)](https://youtu.be/SEFFsbFHAD8)
+
+## 截圖
+
+**桌面端**
+
+<table>
+  <tr>
+    <td><img src="assets/web-light.png" alt="儀表板 — 淺色模式"></td>
+    <td><img src="assets/web-dark.png" alt="儀表板 — 深色模式"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>淺色模式</sub></td>
+    <td align="center"><sub>深色模式</sub></td>
+  </tr>
+</table>
+
+<img src="assets/web-approve.png" alt="操作員審批彈窗" width="600">
+
+**行動裝置**
+
+<table>
+  <tr>
+    <td><img src="assets/mobile-light.JPG" alt="行動裝置 — 淺色" width="220"></td>
+    <td><img src="assets/mobile-dark.JPG" alt="行動裝置 — 深色" width="220"></td>
+    <td><img src="assets/mobile-approve.PNG" alt="行動裝置 — 審批" width="220"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>淺色</sub></td>
+    <td align="center"><sub>深色</sub></td>
+    <td align="center"><sub>審批</sub></td>
+  </tr>
+</table>
+
 ## 功能亮點
 
 - **即時工作階段監控** — 狀態、模型、上下文占用率隨每次 hook 更新。

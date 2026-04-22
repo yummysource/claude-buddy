@@ -4,6 +4,42 @@
 
 [English](README.md) | [繁體中文](README.zh-TW.md)
 
+## 演示视频
+
+[![Claude Code Buddy 实时会话监控演示](https://img.youtube.com/vi/SEFFsbFHAD8/maxresdefault.jpg)](https://youtu.be/SEFFsbFHAD8)
+
+## 截图
+
+**桌面端**
+
+<table>
+  <tr>
+    <td><img src="assets/web-light.png" alt="仪表盘 — 浅色模式"></td>
+    <td><img src="assets/web-dark.png" alt="仪表盘 — 深色模式"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>浅色模式</sub></td>
+    <td align="center"><sub>深色模式</sub></td>
+  </tr>
+</table>
+
+<img src="assets/web-approve.png" alt="操作员审批弹窗" width="600">
+
+**移动端**
+
+<table>
+  <tr>
+    <td><img src="assets/mobile-light.JPG" alt="移动端 — 浅色" width="220"></td>
+    <td><img src="assets/mobile-dark.JPG" alt="移动端 — 深色" width="220"></td>
+    <td><img src="assets/mobile-approve.PNG" alt="移动端 — 审批" width="220"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>浅色</sub></td>
+    <td align="center"><sub>深色</sub></td>
+    <td align="center"><sub>审批</sub></td>
+  </tr>
+</table>
+
 ## 功能亮点
 
 - **实时会话监控** — 状态、模型、上下文占用率随每次 hook 更新。
