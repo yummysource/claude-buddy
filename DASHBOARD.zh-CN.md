@@ -202,6 +202,8 @@ Fallback（statusline 未到达前）：transcript JSONL 只用来提取 `model`
 
 `assistant_msg` 和 `human_msg` 都**按 session 单独存**——切换到没有历史的 session 时这两个字段都会清空。
 
+`human_msg` 还是**channel-aware** 的：当 UserPromptSubmit 的 payload 被 MCP 通道信封包住时（`<channel source="...">…</channel>`，来自 Telegram / Discord / iMessage 插件），hub 会拆掉外壳，把内文当作普通用户输入处理。系统注入的 XML 负载（`<system-reminder>`、`<task-notification>` 等）仍然会被过滤掉，不会出现在 YOU: 面板里。
+
 ---
 
 ## Event Stream（事件流）

@@ -924,14 +924,27 @@ class BuddyHub:
     # notifications, system reminders, etc.) that arrive via UserPromptSubmit
     # but should never appear in the "YOU:" display.
     _SYSTEM_MSG_RE = re.compile(r"^\s*<[a-z\-]+[\s>]", re.IGNORECASE)
+    # MCP channel envelopes (Telegram/Discord/iMessage). The inner text IS
+    # the user's actual message, just routed through a remote channel — must
+    # be unwrapped, not filtered like the system-injected XML above.
+    _CHANNEL_MSG_RE = re.compile(
+        r"^\s*<channel\b[^>]*>(.*?)</channel>\s*$",
+        re.DOTALL | re.IGNORECASE,
+    )
 
     def _on_user_prompt(self, p: dict) -> dict:
         sid = p.get("session_id", "")
         if prompt := (p.get("prompt") or "").strip():
+            # Unwrap MCP channel envelopes first — these ARE the user, just
+            # arriving from Telegram/Discord/iMessage rather than the terminal.
+            if m := self._CHANNEL_MSG_RE.match(prompt):
+                prompt = m.group(1).strip()
+                if not prompt:
+                    return {}
             # Skip system-injected XML payloads (task-notification,
             # system-reminder, etc.) that Claude Code sometimes delivers via
             # this hook. Real user messages never start with an XML tag.
-            if self._SYSTEM_MSG_RE.match(prompt):
+            elif self._SYSTEM_MSG_RE.match(prompt):
                 return {}
             clean = self._truncate_markdown(prompt, min_len=300, max_len=800)
             with self._lock:

@@ -200,6 +200,8 @@ Terminal-style panel for the focused session's last exchange.
 
 Both `assistant_msg` and `human_msg` are **per-session only** — switching to a session with no history clears both fields.
 
+`human_msg` is **channel-aware**: when the UserPromptSubmit payload arrives wrapped in an MCP channel envelope (`<channel source="...">…</channel>` from the Telegram / Discord / iMessage plugins), the hub unwraps it and treats the inner text as the user's message. System-injected XML payloads (`<system-reminder>`, `<task-notification>`, …) are still filtered out so they never reach the YOU: panel.
+
 ---
 
 ## Event Stream
