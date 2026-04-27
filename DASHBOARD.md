@@ -257,8 +257,9 @@ Full-screen overlay shown whenever a `PreToolUse` hook is blocking Claude Code, 
 
 ```
 ┌─────────────────────────────────────────┐
-│  Operator Approval Required             │
-│  BASH                                   │
+│ ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱  │  ← 30 s countdown bar (drains)
+│  Operator Approval Required        🛡   │
+│  BASH                              23s  │
 │  [abc12345]  my-project                 │
 │                                         │
 │  run the test suite                     │
@@ -289,6 +290,18 @@ Full-screen overlay shown whenever a `PreToolUse` hook is blocking Claude Code, 
 | No action for 30 s | *(timeout)* | `permissionDecision: "deny"` with reason "buddy hub: no user decision within 30s" — explicit fail-closed so a missed prompt never silently approves |
 
 Multiple concurrent approval requests are queued; the modal advances to the next one automatically after each decision.
+
+**Visual countdown.** A draining bar across the top of the card and an `Xs` numeric beside the shield icon mirror the hub's 30 s deadline. Both shift to destructive (red) at ≤ 10 s remaining. Client-side timing starts when the prompt's `id` first reaches the dashboard, so network latency may finish the bar a beat before the hub's actual cutoff — the modal closes either way once the heartbeat clears.
+
+**Operator alerts.** While a prompt is pending, `usePromptAlerts` runs three concurrent alerts so a backgrounded tab still reaches the operator before the 30 s deadline expires:
+
+| Tier | Mechanism | Notes |
+|------|-----------|-------|
+| 1 | Tab title flashes between `🔔 {tool} 等待批准…` and the original title every 1 s | Fires from any tab regardless of focus |
+| 2 | `Notification` API with `requireInteraction: true`, `tag: "buddy-approval"` | Click → `window.focus()`. Stays pinned on Chrome/Edge desktop; auto-dismisses on Safari/mobile |
+| 3 | 880 Hz sine-wave beep via `AudioContext`, repeating every 8 s | Peak gain 0.18, 0.25 s exponential decay |
+
+`Notification.requestPermission()` and `AudioContext` both require a user gesture, so `usePromptAlerts` installs a one-shot `pointerdown` listener on first mount. Until the operator clicks anywhere on the page, tiers 2 and 3 silently no-op while tier 1 still works. Once granted, permission persists across reloads via the browser's notification permission store; the AudioContext is reused across beeps to stay under Chromium's per-page context cap.
 
 ---
 

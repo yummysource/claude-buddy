@@ -122,6 +122,28 @@ echo "$INPUT" | curl -sS --max-time 3 -X POST --data-binary @- \
   http://127.0.0.1:7381/hook >/dev/null 2>&1 &
 ```
 
+### 3. 批准流程與三層告警
+
+Claude Code 發起需要批准的工具呼叫時，hub 會阻塞這條 hook **最多 30 秒**，等儀表板按 `approve` / `deny`：
+
+- 操作員按 **Approve** → `permissionDecision: "allow"`
+- 操作員按 **Deny / Escape** 或選項按鈕 → `permissionDecision: "deny"`
+- **30 秒內無動作** → `permissionDecision: "deny"`（fail-closed；reason 為 `"buddy hub: no user decision within 30s"`）
+
+fail-closed 是刻意設計的：如果 hub 回傳空字典，Claude Code 會走它自己的內建 default，而這個 default 歷史上隨版本不同可能是 "ask" 或 "allow"——漏看的請求就會默默放行。hub 改為明確回傳 deny 把這條路堵死。
+
+為了讓這 30 秒不會被漏掉，儀表板在批准請求待處理時會同時啟動三層告警：
+
+1. **標題閃爍** — `document.title` 每 1 秒切換一次，分頁在背景時也看得到。
+2. **系統通知** — `requireInteraction: true`，點擊通知會把儀表板分頁拉到前台。
+3. **聲音提示** — 880Hz 短鈴聲，每 8 秒重播。
+
+模態卡片本身在頂端繪製一條左→右消耗的進度條，右上角 Shield 圖示下方顯示 `Xs` 倒數；剩 10 秒以內時整體變紅色。
+
+> **瀏覽器限制。** `Notification.requestPermission()` 和 `AudioContext` 都需要使用者手勢才能初始化。儀表板在第一次 `pointerdown` 時自動 bootstrap——你**沒點過頁面**之前，只有標題閃爍會動，通知和聲音會靜默失敗。
+
+如果 Claude Code 啟動時帶 `--dangerously-skip-permissions`（或者 `permissions.defaultMode: "bypassPermissions"`），hub 會跳過整個批准流程直接回傳 `allow`，事件流裡記一行 `{tool} (bypass)` 以便稽核。
+
 ## 啟動
 
 | 情境             | hub 命令                                                  | 前端命令           | 存取 URL                        |

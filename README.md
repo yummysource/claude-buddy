@@ -122,6 +122,28 @@ echo "$INPUT" | curl -sS --max-time 3 -X POST --data-binary @- \
   http://127.0.0.1:7381/hook >/dev/null 2>&1 &
 ```
 
+### 3. Approval flow & alerts
+
+When Claude Code asks for permission to run a tool, the hub blocks the hook for up to **30 seconds** waiting for `approve` / `deny` from the dashboard:
+
+- Operator clicks **Approve** → `permissionDecision: "allow"`
+- Operator clicks **Deny / Escape** or picks an option → `permissionDecision: "deny"`
+- **No decision in 30 s** → `permissionDecision: "deny"` (fail-closed; reason: `"buddy hub: no user decision within 30s"`)
+
+The fail-closed rule is deliberate. Returning an empty response would defer to Claude Code's built-in default, which is unspecified by version (historically "ask" or "allow") — a missed prompt could then silently approve a tool call. The hub returns explicit deny instead.
+
+To stop the 30 s window from slipping by unnoticed, the dashboard fires three alerts while a prompt is pending:
+
+1. **Tab title flash** — `document.title` toggles every 1 s; visible from a backgrounded tab.
+2. **System notification** — `requireInteraction: true`, click focuses the dashboard tab.
+3. **Audio beep** — short 880 Hz tone, repeats every 8 s.
+
+The modal itself draws a draining bar across the top of the card and an `Xs` numeric beside the shield icon; both turn red in the last 10 s.
+
+> **Browser caveat.** `Notification.requestPermission()` and `AudioContext` both require a user gesture to bootstrap. The dashboard hooks the first `pointerdown` event on the page to set them up — until you've clicked once, only the title flash fires.
+
+Claude Code launched with `--dangerously-skip-permissions` (or `permissions.defaultMode: "bypassPermissions"`) bypasses the prompt entirely: the hub returns `allow` immediately and the transcript records `{tool} (bypass)`.
+
 ## Run
 
 | Scenario        | Hub command                                             | Frontend command | URL to open                        |

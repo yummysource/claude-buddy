@@ -265,8 +265,9 @@ Event Stream
 
 ```
 ┌─────────────────────────────────────────┐
-│  Operator Approval Required             │
-│  BASH                                   │
+│ ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱  │  ← 30 秒倒數條（消耗式）
+│  Operator Approval Required        🛡   │
+│  BASH                              23s  │
 │  [abc12345]  my-project                 │
 │                                         │
 │  run the test suite                     │
@@ -297,6 +298,18 @@ Event Stream
 | 30 秒無動作 | *(逾時)* | `permissionDecision: "deny"`，理由 "buddy hub: no user decision within 30s"——顯式 fail-closed，避免漏看的請求被預設放行 |
 
 多個並行審批請求會排隊；每次決定後彈窗自動推進到下一個。
+
+**視覺倒數。** 卡片頂端的進度條和 Shield 圖示下方的 `Xs` 數字共同鏡像 hub 的 30 秒截止時間，剩 ≤ 10 秒時整體變紅色（destructive）。客戶端計時從 prompt 的 `id` 第一次到達儀表板開始，所以網路延遲可能讓進度條比 hub 實際截止早一拍清零——無論如何，下一次 heartbeat 一到模態就會消失。
+
+**操作員告警。** 批准請求待處理期間，`usePromptAlerts` 會同時跑三層告警，確保背景分頁也能及時把使用者拉回來：
+
+| 層級 | 機制 | 備註 |
+|------|------|------|
+| 1 | 標題在 `🔔 {tool} 等待批准…` 與原標題之間每 1 秒切換 | 任何分頁（前景/背景）都看得到 |
+| 2 | `Notification` API，`requireInteraction: true` + `tag: "buddy-approval"` | 點擊通知 → `window.focus()`。Chrome/Edge 桌面會保持顯示；Safari/手機端通常會自動消失 |
+| 3 | `AudioContext` 合成 880Hz 正弦短鈴聲，每 8 秒重播一次 | 峰值音量 0.18，0.25 秒指數衰減 |
+
+`Notification.requestPermission()` 和 `AudioContext` 都需要使用者手勢才能初始化，所以 `usePromptAlerts` 在掛載時註冊一次性的 `pointerdown` 監聽做 bootstrap。在使用者點擊頁面之前，第 2、3 層會靜默 no-op，但第 1 層始終生效。授權一次以後瀏覽器會持久化；AudioContext 重複使用同一個實例避免觸發 Chromium 每頁配額上限。
 
 ---
 

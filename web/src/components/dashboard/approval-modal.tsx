@@ -11,10 +11,15 @@
  * without answering" path.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Shield, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HubHeartbeat, HubPrompt } from '@/types/hub';
+
+// Hub denies on its own after 30 s; the bar/numeric must mirror that contract.
+const TIMEOUT_SECONDS = 30;
+// Threshold below which the countdown shifts to destructive colors.
+const URGENT_THRESHOLD_S = 10;
 
 interface ApprovalModalProps {
   /** Full heartbeat; modal is visible iff `hb.prompt` is non-null. */
@@ -52,6 +57,9 @@ function ApprovalCard({
   onDeny:    (id: string) => void;
   onOption:  (id: string, index: number) => void;
 }) {
+  const remaining = useTimeoutCountdown(prompt.id);
+  const urgent    = remaining <= URGENT_THRESHOLD_S;
+
   return (
     <div
       role="dialog"
@@ -64,8 +72,16 @@ function ApprovalCard({
       )}
       onClick={e => e.stopPropagation()}
     >
-      {/* Top accent line */}
-      <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+      {/* Draining countdown bar — left-to-right, mirrors the hub's 30 s deadline. */}
+      <div className="h-0.5 w-full bg-border/40" aria-hidden="true">
+        <div
+          className={cn(
+            'h-full transition-[width] duration-500 ease-linear',
+            urgent ? 'bg-destructive' : 'bg-primary/60',
+          )}
+          style={{ width: `${(remaining / TIMEOUT_SECONDS) * 100}%` }}
+        />
+      </div>
 
       <div className="p-8">
         {/* Header */}
@@ -81,7 +97,19 @@ function ApprovalCard({
               {prompt.tool}
             </h2>
           </div>
-          <Shield size={22} className="text-primary/60" aria-hidden="true" />
+          <div className="flex flex-col items-end gap-1">
+            <Shield size={22} className="text-primary/60" aria-hidden="true" />
+            <span
+              className={cn(
+                'text-[10px] font-mono tabular-nums tracking-wider',
+                urgent ? 'text-destructive' : 'text-muted-foreground',
+              )}
+              aria-live="polite"
+              aria-label={`Auto-deny in ${remaining} seconds`}
+            >
+              {remaining}s
+            </span>
+          </div>
         </div>
 
         {/* Session info badge */}
@@ -161,6 +189,34 @@ function ApprovalCard({
       </div>
     </div>
   );
+}
+
+/**
+ * Tick down from {@link TIMEOUT_SECONDS} until the hub's deny-on-timeout fires.
+ *
+ * The hub itself measures the 30 s window server-side; this client copy is a
+ * visual mirror starting from the moment the prompt id first reaches the
+ * client. Network latency means the bar may finish a beat before the hub's
+ * actual cutoff — accepted: the modal disappears either way.
+ *
+ * @param promptId - Identity of the current prompt; resets the timer when it changes.
+ * @returns Whole seconds remaining (0 when expired).
+ */
+function useTimeoutCountdown(promptId: string): number {
+  const [remaining, setRemaining] = useState(TIMEOUT_SECONDS);
+
+  useEffect(() => {
+    const start = Date.now();
+    const tick  = () => {
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      setRemaining(Math.max(0, TIMEOUT_SECONDS - elapsed));
+    };
+    tick();
+    const id = window.setInterval(tick, 500);
+    return () => window.clearInterval(id);
+  }, [promptId]);
+
+  return remaining;
 }
 
 /**

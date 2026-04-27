@@ -16,6 +16,7 @@
 import { useState } from 'react';
 import { useHub } from '@/hooks/use-hub';
 import { useElapsed } from '@/hooks/use-elapsed';
+import { usePromptAlerts } from '@/hooks/use-prompt-alerts';
 import { formatDuration } from '@/lib/utils';
 import { Header }         from './header';
 import { Sidebar }        from './sidebar';
@@ -41,6 +42,10 @@ export default function Dashboard() {
   // sharing the hook keeps both tickers in lockstep without one owning the
   // other's render cycle.
   const elapsed = useElapsed(hb?.started_ts);
+  // Title flash + system notification + audio beep while a prompt is pending.
+  // The hub denies on its own after 30 s, so this exists to prevent a missed
+  // notification from defaulting to deny.
+  usePromptAlerts(hb?.prompt ?? null);
 
   return (
     <>
