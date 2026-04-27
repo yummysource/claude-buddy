@@ -1108,7 +1108,14 @@ class BuddyHub:
 
         self._add_transcript(f"{tool} timeout", sid)
         self._bump.set()
-        return {}
+        # Explicit deny on timeout: returning {} would defer to Claude Code's
+        # built-in default (historically "ask" or "allow" by version), which
+        # could silently approve a tool call the user never saw. Fail closed.
+        return {"hookSpecificOutput": {
+            "hookEventName":            "PreToolUse",
+            "permissionDecision":       "deny",
+            "permissionDecisionReason": "buddy hub: no user decision within 30s",
+        }}
 
     # ── Statusline ────────────────────────────────────────────────────────
 

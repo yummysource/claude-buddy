@@ -286,7 +286,7 @@ Full-screen overlay shown whenever a `PreToolUse` hook is blocking Claude Code, 
 | Click Approve | `{ cmd: "approve", id }` | `permissionDecision: "allow"` |
 | Click Deny / Escape | `{ cmd: "deny", id }` | `permissionDecision: "deny"` |
 | Click option button | `{ cmd: "option", id, index }` | `permissionDecision: "deny"` with the chosen label in reason (Claude reads the reason to get the answer) |
-| No action for 30 s | *(timeout)* | Empty response — Claude Code uses its default behaviour |
+| No action for 30 s | *(timeout)* | `permissionDecision: "deny"` with reason "buddy hub: no user decision within 30s" — explicit fail-closed so a missed prompt never silently approves |
 
 Multiple concurrent approval requests are queued; the modal advances to the next one automatically after each decision.
 

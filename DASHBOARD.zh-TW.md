@@ -294,7 +294,7 @@ Event Stream
 | 按 Approve | `{ cmd: "approve", id }` | `permissionDecision: "allow"` |
 | 按 Deny / Escape | `{ cmd: "deny", id }` | `permissionDecision: "deny"` |
 | 按選項按鈕 | `{ cmd: "option", id, index }` | `permissionDecision: "deny"`，reason 裡帶所選標籤（Claude 讀 reason 取得答案）|
-| 30 秒無動作 | *(逾時)* | 空回應——Claude Code 用自己的預設行為 |
+| 30 秒無動作 | *(逾時)* | `permissionDecision: "deny"`，理由 "buddy hub: no user decision within 30s"——顯式 fail-closed，避免漏看的請求被預設放行 |
 
 多個並行審批請求會排隊；每次決定後彈窗自動推進到下一個。
 
