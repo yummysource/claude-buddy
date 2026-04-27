@@ -1,25 +1,26 @@
 {
-  "_comment": "Merge the `hooks` block into ~/.claude/settings.json. Each command POSTs the hook payload to the hub daemon. `|| echo '{}'` makes the hook a no-op when the hub is not running so Claude Code keeps working normally.",
-  "_statusline_comment": "statusline metrics (context %, cost, tokens, lines changed) are NOT delivered via hooks. Add the following to ~/.claude/settings.json alongside the hooks block, pointing at hooks/statusline.sh (or your own script with the buddy forwarding lines added): \"statusLine\": { \"type\": \"command\", \"command\": \"/path/to/claude-code-buddy/hooks/statusline.sh\", \"padding\": 0 }",
+  "_comment": "Merge the `hooks` block into ~/.claude/settings.json. Each entry pipes the hook payload to hooks/post-hook.sh, which POSTs it to the hub daemon and always exits 0 with `{}` on stdout — so Claude Code keeps working when the hub is offline. The optional argument is the curl --max-time in seconds (default 3); PreToolUse uses 40 because permission prompts can block.",
+  "_install_comment": "Copy hooks/post-hook.sh and hooks/statusline.sh to ~/.claude/hooks/ before merging this block, so the $HOME-based paths below resolve.",
+  "_statusline_comment": "statusline metrics (context %, cost, tokens, lines changed) are NOT delivered via hooks. Add the following to ~/.claude/settings.json alongside the hooks block, pointing at $HOME/.claude/hooks/statusline.sh (or your own script with the buddy forwarding lines added): \"statusLine\": { \"type\": \"command\", \"command\": \"$HOME/.claude/hooks/statusline.sh\", \"padding\": 0 }",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh"}
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh"}
         ]
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh"}
         ]
       }
     ],
@@ -27,7 +28,7 @@
       {
         "matcher": ".*",
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 40 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh 40"}
         ]
       }
     ],
@@ -35,7 +36,7 @@
       {
         "matcher": ".*",
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh"}
         ]
       }
     ],
@@ -43,14 +44,14 @@
       {
         "matcher": ".*",
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh"}
         ]
       }
     ],
     "Notification": [
       {
         "hooks": [
-          {"type": "command", "command": "curl -sS --max-time 3 -X POST --data-binary @- http://127.0.0.1:7381/hook 2>/dev/null || echo '{}'"}
+          {"type": "command", "command": "$HOME/.claude/hooks/post-hook.sh"}
         ]
       }
     ]

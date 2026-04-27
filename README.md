@@ -22,6 +22,7 @@ Real-time dashboard and optional hardware display for monitoring Claude Code ses
     <td align="center"><sub>Dark mode</sub></td>
   </tr>
 </table>
+
 <img src="assets/web-approve.png" alt="Operator approval modal" width="600">
 
 **Mobile**
@@ -53,11 +54,13 @@ Real-time dashboard and optional hardware display for monitoring Claude Code ses
 
 ```
   Claude Code                Python hub                   Next.js frontend
-  (hooks)                    (BuddyHub)                   (Bun dev server)
+  hooks + statusLine         (BuddyHub)                   (Bun dev server)
   ──────────                 ──────────                   ────────────────
        │                          │                             │
        │  POST /hook              │                             │
        │  127.0.0.1:7381          │                             │
+       │   • hook events          │                             │
+       │   • statusLine metrics   │                             │
        ├─────────────────────────▶│                             │
        │                          │  WebSocket                  │
        │                          │  :7382                      │
@@ -87,13 +90,13 @@ cd ../../web && bun install
 
 ### 1. Hook events
 
-Merge the `hooks` block from [`hooks/settings.json`](hooks/settings.json) into your `~/.claude/settings.json`.
+Copy `hooks/post-hook.sh` to `~/.claude/hooks/`, then merge the `hooks` block from [`hooks/settings.json`](hooks/settings.json) into your `~/.claude/settings.json`.
 
-Every hook posts the Claude Code payload to `http://127.0.0.1:7381/hook`. The trailing `|| echo '{}'` keeps Claude Code working when the hub is offline — a failed curl returns an empty JSON object to the hook runner instead of blocking the session.
+Each hook calls `$HOME/.claude/hooks/post-hook.sh`, which buffers stdin, POSTs the payload to `http://127.0.0.1:7381/hook`, and always exits 0 with `{}` on stdout — so Claude Code keeps working when the hub is offline. Without the wrapper, a connection-refused curl can exit before consuming stdin and the hook command's exit status gets reported as a failure.
 
 ### 2. Statusline (context %, cost, token counts, lines changed)
 
-The rich metrics shown in the dashboard — context usage percentage, session cost, cumulative token counts, and code-change lines — come from Claude Code's `statusLine` mechanism, **not** from the hooks above. Configure it by adding a `statusLine` block to `~/.claude/settings.json` alongside the hooks:
+The rich metrics shown in the dashboard — context usage percentage, session cost, cumulative token counts, and code-change lines — come from Claude Code's `statusLine` mechanism, **not** from the hooks above. Copy `hooks/statusline.sh` to `~/.claude/hooks/` (alongside `post-hook.sh`), then add a `statusLine` block to `~/.claude/settings.json`:
 
 ```jsonc
 // ~/.claude/settings.json
@@ -101,7 +104,7 @@ The rich metrics shown in the dashboard — context usage percentage, session co
   "hooks": { /* ... from hooks/settings.json ... */ },
   "statusLine": {
     "type": "command",
-    "command": "/absolute/path/to/claude-code-buddy/hooks/statusline.sh",
+    "command": "$HOME/.claude/hooks/statusline.sh",
     "padding": 0
   }
 }

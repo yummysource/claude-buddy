@@ -54,11 +54,13 @@
 
 ```
   Claude Code                Python hub                   Next.js 前端
-  (hooks)                    (BuddyHub)                   (Bun dev server)
+  hooks + statusLine         (BuddyHub)                   (Bun dev server)
   ──────────                 ──────────                   ────────────────
        │                          │                             │
        │  POST /hook              │                             │
        │  127.0.0.1:7381          │                             │
+       │   • hook 事件            │                             │
+       │   • statusLine 指标      │                             │
        ├─────────────────────────▶│                             │
        │                          │  WebSocket                  │
        │                          │  :7382                      │
@@ -88,13 +90,13 @@ cd ../../web && bun install
 
 ### 1. Hook 事件
 
-把 [`hooks/settings.json`](hooks/settings.json) 中的 `hooks` 块合并到 `~/.claude/settings.json`。
+把 `hooks/post-hook.sh` 拷贝到 `~/.claude/hooks/`，然后把 [`hooks/settings.json`](hooks/settings.json) 中的 `hooks` 块合并到 `~/.claude/settings.json`。
 
-每个 hook 把 Claude Code 的事件 POST 到 `http://127.0.0.1:7381/hook`。命令末尾的 `|| echo '{}'` 保证 hub 离线时 Claude Code 仍可正常运行——curl 失败时会给 hook runner 返回空 JSON 对象，而不是阻塞会话。
+每个 hook 都调用 `$HOME/.claude/hooks/post-hook.sh`，由脚本先缓冲 stdin，再把事件 POST 到 `http://127.0.0.1:7381/hook`，并始终以 `{}` 退出码 0 返回——保证 hub 离线时 Claude Code 仍可正常运行。如果不走包装脚本，curl 在连接被拒后可能在读完 stdin 之前退出，hook 命令的退出码会被判为失败。
 
 ### 2. Statusline（上下文占用、成本、Token 数、代码行数）
 
-仪表盘里的核心指标——上下文窗口百分比、会话成本、累计 Token 数、代码新增/删除行数——来自 Claude Code 的 `statusLine` 机制，**不是** 来自上面的 hooks。在 `~/.claude/settings.json` 里加一个 `statusLine` 块：
+仪表盘里的核心指标——上下文窗口百分比、会话成本、累计 Token 数、代码新增/删除行数——来自 Claude Code 的 `statusLine` 机制，**不是** 来自上面的 hooks。把 `hooks/statusline.sh` 拷贝到 `~/.claude/hooks/`（和 `post-hook.sh` 放一起），然后在 `~/.claude/settings.json` 里加一个 `statusLine` 块：
 
 ```jsonc
 // ~/.claude/settings.json
@@ -102,7 +104,7 @@ cd ../../web && bun install
   "hooks": { /* ... 来自 hooks/settings.json ... */ },
   "statusLine": {
     "type": "command",
-    "command": "/绝对路径/claude-code-buddy/hooks/statusline.sh",
+    "command": "$HOME/.claude/hooks/statusline.sh",
     "padding": 0
   }
 }
