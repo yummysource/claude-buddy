@@ -146,6 +146,34 @@ fail-closed 是刻意設計的：如果 hub 回傳空字典，Claude Code 會走
 
 ## 啟動
 
+### 快速啟動（啟動指令稿）
+
+`scripts/dev.sh` 一次啟動兩個服務，等待各自綁好埠後把存取地址印到終端機。
+
+```bash
+./scripts/dev.sh                     # 啟動 hub + web（僅本機，預設）
+./scripts/dev.sh start  hub          # 僅啟動 hub
+./scripts/dev.sh start  web          # 僅啟動 web
+./scripts/dev.sh restart hub         # 重啟 hub，不動 web
+./scripts/dev.sh stop   all          # 停止全部
+./scripts/dev.sh status              # 查看執行狀態
+./scripts/dev.sh logs   hub          # 即時追蹤 hub 日誌（Ctrl-C 離開）
+```
+
+Hub 參數透過 `HUB_*` 環境變數控制（也可直接在 `scripts/dev.sh` 頂部永久修改）：
+
+```bash
+HUB_HOST=0.0.0.0            ./scripts/dev.sh start hub   # 暴露到區域網（需要 token）
+HUB_HOST=0.0.0.0 HUB_NO_AUTH=1 ./scripts/dev.sh          # 區域網，無驗證
+HUB_TRANSPORT=ble            ./scripts/dev.sh restart hub # BLE 硬體
+HUB_TOKEN=mytoken            ./scripts/dev.sh start hub   # 固定 token
+HUB_WS_PORT=7390             ./scripts/dev.sh             # 自訂 WebSocket 埠
+```
+
+hub 啟動成功後，指令稿會從日誌中提取並列印存取地址，無需翻看終端機輸出即可複製 URL。
+
+### 手動啟動
+
 | 情境             | hub 命令                                                  | 前端命令           | 存取 URL                        |
 |------------------|-----------------------------------------------------------|---------------------|---------------------------------|
 | 僅本機           | `uv run python -m hub`                                    | `bun run dev`       | `http://localhost:3000`         |

@@ -146,6 +146,34 @@ Claude Code launched with `--dangerously-skip-permissions` (or `permissions.defa
 
 ## Run
 
+### Quick start (launcher)
+
+`scripts/dev.sh` starts both services, waits for each to bind its port, and prints the access URLs to the terminal.
+
+```bash
+./scripts/dev.sh                     # start hub + web (local only, default)
+./scripts/dev.sh start  hub          # hub only
+./scripts/dev.sh start  web          # web only
+./scripts/dev.sh restart hub         # restart hub, leave web alone
+./scripts/dev.sh stop   all          # stop both
+./scripts/dev.sh status              # check what is running
+./scripts/dev.sh logs   hub          # tail hub log (Ctrl-C to exit)
+```
+
+Hub parameters are controlled with `HUB_*` env vars (can also be set permanently at the top of `scripts/dev.sh`):
+
+```bash
+HUB_HOST=0.0.0.0            ./scripts/dev.sh start hub   # expose on LAN (token required)
+HUB_HOST=0.0.0.0 HUB_NO_AUTH=1 ./scripts/dev.sh          # LAN, no token
+HUB_TRANSPORT=ble            ./scripts/dev.sh restart hub # BLE hardware transport
+HUB_TOKEN=mytoken            ./scripts/dev.sh start hub   # pin a fixed token
+HUB_WS_PORT=7390             ./scripts/dev.sh             # custom WebSocket port
+```
+
+After the hub starts, the launcher reprints the access banner from the hub log so you can copy a URL immediately without digging through the terminal output.
+
+### Manual
+
 | Scenario        | Hub command                                             | Frontend command | URL to open                        |
 |-----------------|---------------------------------------------------------|------------------|------------------------------------|
 | Local only      | `uv run python -m hub`                                  | `bun run dev`    | `http://localhost:3000`            |
